@@ -14,8 +14,10 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import static org.hamcrest.Matchers.containsString;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 public class VendingMachineTest extends DemoApplicationTests {
 
@@ -26,7 +28,10 @@ public class VendingMachineTest extends DemoApplicationTests {
 
     @Before
     public void setup() {
-        mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
+        mockMvc = MockMvcBuilders
+                .webAppContextSetup(webApplicationContext)
+                .apply(springSecurity())
+                .build();
     }
 
     @Test
@@ -50,6 +55,20 @@ public class VendingMachineTest extends DemoApplicationTests {
 
     }
 
+    @Test
+    public void testDeposit() throws Exception {
+
+        String token = "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJCdXllciIsImV4cCI6MTY0Mjg3OTEwOCwiaWF0IjoxNjQyODYxMTA4fQ.WsWDSkiUVfrAntTEtBPUhE0T1c6iMivxECu3ouszE2z6ggRgnJcmgD4ifqTx35AneKyy8jz1D9o7eR1rxw9vYA";
+
+        this.mockMvc.perform(MockMvcRequestBuilders
+                        .get("/deposit?amount=20")
+                        .header("Authorization", "Bearer " + token)
+                )
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("20")));
+
+    }
 
     public static String asJsonString(final Object obj) {
         try {
