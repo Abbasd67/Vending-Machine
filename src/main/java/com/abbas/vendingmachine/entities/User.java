@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name="benutzer")
+@Table(name = "benutzer")
 public class User {
 
     @Id
@@ -28,15 +28,20 @@ public class User {
         this.products = products;
     }
 
-    public User(String username, String password, Enums.Role role) {
-        this.setUsername(username);
-        this.setPassword(password);
-        this.setRole(role);
-        this.setDeposit(0);
-    }
 
     public User() {
 
+    }
+
+    public User(String username, String password, Enums.Role role) {
+        this(username, password, role, 0);
+    }
+
+    public User(String username, String password, Enums.Role role, int deposit) {
+        this.username = username;
+        this.password = password;
+        this.role = role;
+        this.deposit = deposit;
     }
 
     public int getId() {

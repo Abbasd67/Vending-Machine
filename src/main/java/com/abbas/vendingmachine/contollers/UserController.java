@@ -8,7 +8,6 @@ import com.abbas.vendingmachine.models.*;
 import com.abbas.vendingmachine.services.ProductService;
 import com.abbas.vendingmachine.services.UserService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -28,14 +27,17 @@ import java.util.stream.Collectors;
 @Validated
 public class UserController {
 
-    @Autowired
-    private UserService userService;
+    private final UserService userService;
 
-    @Autowired
-    private ProductService productService;
+    private final ProductService productService;
 
-    @Autowired
-    private JwtTokenUtil jwtTokenUtil;
+    private final JwtTokenUtil jwtTokenUtil;
+
+    public UserController(UserService userService, ProductService productService, JwtTokenUtil jwtTokenUtil) {
+        this.userService = userService;
+        this.productService = productService;
+        this.jwtTokenUtil = jwtTokenUtil;
+    }
 
     @PostMapping("/user")
     public HttpStatus register(@RequestBody User user) throws ValidationException {

@@ -16,12 +16,13 @@ import java.util.Optional;
 public class DataConfig {
 
     @Bean
-    CommandLineRunner userBean(UserRepository repository){
+    CommandLineRunner userBean(UserRepository repository) {
         return args -> {
-            User admin = new User("Admin","Admin", Enums.Role.ADMIN);
-            User buyer = new User("Buyer","Buyer", Enums.Role.BUYER);
-            User seller = new User("Seller","Seller", Enums.Role.SELLER);
-            repository.saveAll(List.of(admin, buyer, seller));
+            User admin = new User("Admin", "Admin", Enums.Role.ADMIN);
+            User buyer = new User("Buyer", "Buyer", Enums.Role.BUYER);
+            User buyer2 = new User("Buyer2", "Buyer2", Enums.Role.BUYER, 100);
+            User seller = new User("Seller", "Seller", Enums.Role.SELLER);
+            repository.saveAll(List.of(admin, buyer, buyer2, seller));
         };
     }
 
@@ -32,7 +33,7 @@ public class DataConfig {
             Product product2 = new Product("product2", 10, 15);
             Product product3 = new Product("product3", 20, 30);
             Optional<User> seller = userRepository.findByUsername("Seller");
-            if(seller.isPresent()){
+            if (seller.isPresent()) {
                 product1.setSeller(seller.get());
                 product2.setSeller(seller.get());
                 product3.setSeller(seller.get());
