@@ -62,6 +62,7 @@ public class VendingMachineTest extends DemoApplicationTests {
     @Test
     public void testDeposit() throws Exception {
 
+        //remember to get new token when testing
         String token = "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJCdXllciIsImV4cCI6MTY0Mjg3OTEwOCwiaWF0IjoxNjQyODYxMTA4fQ.WsWDSkiUVfrAntTEtBPUhE0T1c6iMivxECu3ouszE2z6ggRgnJcmgD4ifqTx35AneKyy8jz1D9o7eR1rxw9vYA";
 
         this.mockMvc.perform(MockMvcRequestBuilders
@@ -77,6 +78,7 @@ public class VendingMachineTest extends DemoApplicationTests {
     @Test
     public void testBuy() throws Exception {
 
+        //remember to get new token when testing
         String token = "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJCdXllcjIiLCJleHAiOjE2NDI4ODA1ODYsImlhdCI6MTY0Mjg2MjU4Nn0.t2njc9z7G7sfrjPR8JK3pCRyosOayF8-v1xCQD9ZZ_FzvQRvMdLqgxxaDR5eOYbbk7ogo2SbSnfw1EkGIzxggA";
 
         BuyProductModel buy1 = new BuyProductModel(1, 2);
