@@ -96,7 +96,11 @@ public class VendingMachineTest extends DemoApplicationTests {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.totalSpent").value(65))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.products[*].amountAvailable").isNotEmpty())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.products[0].amountAvailable").value(98))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.products[1].amountAvailable").value(7));
+                .andExpect(MockMvcResultMatchers.jsonPath("$.products[1].amountAvailable").value(7))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.changes").isArray())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.changes[0]").value(20))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.changes[1]").value(10))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.changes[2]").value(5));
 
     }
 
