@@ -2,6 +2,7 @@ package com.example.demo.contollers;
 
 import com.example.demo.configurations.JwtTokenUtil;
 import com.example.demo.entities.Enums;
+import com.example.demo.entities.Product;
 import com.example.demo.entities.User;
 import com.example.demo.models.*;
 import com.example.demo.services.ProductService;
@@ -11,14 +12,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.xml.bind.ValidationException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @RestController
@@ -43,7 +42,7 @@ public class UserController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginModel model) {
-        var userDetails = userService.login(model.getUsername(), model.getPassword());
+        UserDetails userDetails = userService.login(model.getUsername(), model.getPassword());
 
         final String token = jwtTokenUtil.generateToken(userDetails);
 
@@ -53,19 +52,19 @@ public class UserController {
     @GetMapping("/deposit")
     @PreAuthorize("hasAuthority('BUYER')")
     public ResponseEntity<?> deposit(@RequestParam(value = "amount") int amount) throws ValidationException {
-        var depositType = Enums.DepositType.valueOf(amount);
+        Optional<Enums.DepositType> depositType = Enums.DepositType.valueOf(amount);
         if (depositType.isEmpty()) {
             throw new ValidationException("amount is not acceptable!!!");
         }
-        var user = userService.getCurrentUser();
-        var newAmount = userService.deposit(user.getId(), amount);
+        User user = userService.getCurrentUser();
+        int newAmount = userService.deposit(user.getId(), amount);
         return ResponseEntity.ok(newAmount);
     }
 
     @GetMapping("/reset")
     @PreAuthorize("hasAuthority('BUYER')")
     public HttpStatus reset() throws ValidationException {
-        var user = userService.getCurrentUser();
+        User user = userService.getCurrentUser();
         userService.reset(user.getId());
         return HttpStatus.OK;
     }
@@ -73,22 +72,22 @@ public class UserController {
     @PostMapping("/buy")
     @PreAuthorize("hasAuthority('BUYER')")
     public ResponseEntity<?> buy(@RequestBody BuyModel model) throws ValidationException {
-        var user = userService.getCurrentUser();
-        var productIds = model
+        User user = userService.getCurrentUser();
+        List<Integer> productIds = model
                 .getProducts()
                 .stream()
                 .map(BuyProductModel::getProductId)
                 .collect(Collectors.toList());
 
-        var products = productService.findAllById(productIds);
+        List<Product> products = productService.findAllById(productIds);
         int totalCost = productService.getTotalCost(model, products);
         if (totalCost > user.getDeposit()) {
             throw new ValidationException("Deposit is not enough!!!");
         }
 
 
-        for (var product : products) {
-            var productModel = model.getProducts().stream()
+        for (Product product : products) {
+            Optional<BuyProductModel> productModel = model.getProducts().stream()
                     .filter(p -> p.getProductId() == product.getId())
                     .findFirst();
             if (productModel.isEmpty()) {
@@ -100,10 +99,10 @@ public class UserController {
 
         int remaining = user.getDeposit() - totalCost;
         ArrayList<Integer> changes = new ArrayList<>();
-        var depositTypes = Arrays.stream(Enums.DepositType.values())
+        List<Enums.DepositType> depositTypes = Arrays.stream(Enums.DepositType.values())
                 .sorted((a, b) -> b.amount - a.amount)
                 .collect(Collectors.toList());
-        for (var depositType : depositTypes) {
+        for (Enums.DepositType depositType : depositTypes) {
             while (remaining >= depositType.amount) {
                 changes.add(depositType.amount);
                 remaining -= depositType.amount;
@@ -112,7 +111,7 @@ public class UserController {
 
         userService.reset(user.getId());
 
-        var postBack = new BuyPostBackModel(products, totalCost, changes);
+        BuyPostBackModel postBack = new BuyPostBackModel(products, totalCost, changes);
         return ResponseEntity.ok(postBack);
     }
 

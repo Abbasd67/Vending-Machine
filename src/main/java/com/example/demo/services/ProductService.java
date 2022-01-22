@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 import javax.xml.bind.ValidationException;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class ProductService {
@@ -33,7 +32,7 @@ public class ProductService {
 
     public Product save(Product product) throws ValidationException {
         if (product.getId() <= 0) {
-            var oldProduct = findByName(product.getProductName());
+            Optional<Product> oldProduct = findByName(product.getProductName());
             if (oldProduct.isPresent()) {
                 throw new ValidationException("Product with same name exist!!!");
             }
@@ -47,8 +46,8 @@ public class ProductService {
 
     public int getTotalCost(BuyModel model, List<Product> products) throws ValidationException {
         int totalCost = 0;
-        for (var product : products) {
-            var productModel = model.getProducts().stream()
+        for (Product product : products) {
+            Optional<BuyProductModel> productModel = model.getProducts().stream()
                     .filter(p -> p.getProductId() == product.getId())
                     .findFirst();
             if (productModel.isEmpty()) {

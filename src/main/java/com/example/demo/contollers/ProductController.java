@@ -7,12 +7,10 @@ import com.example.demo.services.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.xml.bind.ValidationException;
-import java.nio.file.attribute.UserPrincipalNotFoundException;
 import java.util.List;
 import java.util.Optional;
 
@@ -48,8 +46,8 @@ public class ProductController {
     }
 
     private Product setProduct(Product product) throws ValidationException {
-        var user = userService.getCurrentUser();
-        var productOptional = productService.findById(product.getId());
+        User user = userService.getCurrentUser();
+        Optional<Product> productOptional = productService.findById(product.getId());
         if (productOptional.isEmpty()) {
             if (product.getId() > 0) {
                 throw new ValidationException("Product not found!!!");
@@ -57,7 +55,7 @@ public class ProductController {
             product.setSeller(user);
             return productService.save(product);
         } else {
-            var currentProduct = productOptional.get();
+            Product currentProduct = productOptional.get();
             if (!currentProduct.getSeller().getUsername().equalsIgnoreCase(user.getUsername())) {
                 throw new ValidationException("this product is not yours");
             }
@@ -71,12 +69,12 @@ public class ProductController {
     @DeleteMapping("/product/{productId}")
     @PreAuthorize("hasAuthority('SELLER')")
     public HttpStatus deleteProduct(@PathVariable("productId") int productId) throws ValidationException {
-        var user = userService.getCurrentUser();
-        var productOptional = productService.findById(productId);
+        User user = userService.getCurrentUser();
+        Optional<Product> productOptional = productService.findById(productId);
         if (productOptional.isEmpty()) {
             throw new ValidationException("Product not found!!!");
         }
-        var currentProduct = productOptional.get();
+        Product currentProduct = productOptional.get();
         if (!currentProduct.getSeller().getUsername().equalsIgnoreCase(user.getUsername())) {
             throw new ValidationException("this product is not yours");
         }

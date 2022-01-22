@@ -11,7 +11,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import javax.xml.bind.ValidationException;
-import java.nio.file.attribute.UserPrincipalNotFoundException;
 import java.util.List;
 import java.util.Optional;
 
@@ -29,7 +28,7 @@ public class UserService implements UserDetailsService {
     }
 
     public UserDetails login(String username, String password) throws UsernameNotFoundException {
-        var user = findByUsername(username);
+        Optional<User> user = findByUsername(username);
         if (user.isEmpty() || !user.get().getPassword().equalsIgnoreCase(password)) {
             throw new UsernameNotFoundException("User not found with this Username and Password!!!");
         }
@@ -37,7 +36,7 @@ public class UserService implements UserDetailsService {
     }
 
     public void addUser(User user) throws ValidationException {
-        var oldUser = findByUsername(user.getUsername());
+        Optional<User> oldUser = findByUsername(user.getUsername());
         if (oldUser.isPresent()) {
             throw new ValidationException("User exist with same username");
         }
@@ -45,15 +44,19 @@ public class UserService implements UserDetailsService {
     }
 
     public int deposit(int userId, int amount) throws ValidationException {
-        var user = userRepository.findById(userId).orElseThrow(() -> new ValidationException("User not found!!!"));
+        User user = findById(userId);
         user.setDeposit(user.getDeposit() + amount);
         return userRepository.save(user).getDeposit();
     }
 
     public void reset(int userId) throws ValidationException {
-        var user = userRepository.findById(userId).orElseThrow(() -> new ValidationException("User not found!!!"));
+        User user = findById(userId);
         user.setDeposit(0);
         userRepository.save(user);
+    }
+
+    public User findById(int userId) throws ValidationException {
+        return userRepository.findById(userId).orElseThrow(() -> new ValidationException("User not found!!!"));
     }
 
     @Override
@@ -64,12 +67,12 @@ public class UserService implements UserDetailsService {
     }
 
     public User getCurrentUser() throws ValidationException {
-        var user = (org.springframework.security.core.userdetails.User) SecurityContextHolder.getContext().getAuthentication()
-                .getPrincipal();
-        var currentUser = findByUsername(user.getUsername());
-        if (currentUser.isEmpty()) {
-            throw new ValidationException("User not found!!!");
-        }
-        return currentUser.get();
+        org.springframework.security.core.userdetails.User user =
+                (org.springframework.security.core.userdetails.User) SecurityContextHolder
+                        .getContext()
+                        .getAuthentication()
+                        .getPrincipal();
+        return findByUsername(user.getUsername())
+                .orElseThrow(() -> new ValidationException("User not found!!!"));
     }
 }
