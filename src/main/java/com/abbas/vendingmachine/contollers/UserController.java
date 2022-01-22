@@ -5,7 +5,6 @@ import com.abbas.vendingmachine.entities.Enums;
 import com.abbas.vendingmachine.entities.Product;
 import com.abbas.vendingmachine.entities.User;
 import com.abbas.vendingmachine.models.*;
-import com.example.demo.models.*;
 import com.abbas.vendingmachine.services.ProductService;
 import com.abbas.vendingmachine.services.UserService;
 import lombok.extern.slf4j.Slf4j;
@@ -18,7 +17,10 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.xml.bind.ValidationException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
