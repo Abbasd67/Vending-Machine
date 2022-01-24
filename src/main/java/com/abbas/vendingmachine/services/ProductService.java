@@ -1,16 +1,20 @@
 package com.abbas.vendingmachine.services;
 
 import com.abbas.vendingmachine.Reporsitories.ProductRepository;
+import com.abbas.vendingmachine.entities.Enums;
 import com.abbas.vendingmachine.entities.Product;
 import com.abbas.vendingmachine.entities.User;
 import com.abbas.vendingmachine.models.BuyModel;
+import com.abbas.vendingmachine.models.BuyPostBackModel;
 import com.abbas.vendingmachine.models.BuyProductModel;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PathVariable;
 
 import javax.xml.bind.ValidationException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class ProductService {
@@ -54,6 +58,47 @@ public class ProductService {
             throw new ValidationException("this product is not yours");
         }
         delete(currentProduct);
+    }
+
+    public BuyPostBackModel buy(BuyModel model) throws ValidationException {
+        User user = getCurrentUser();
+        List<Integer> productIds = model
+                .getProducts()
+                .stream()
+                .map(BuyProductModel::getProductId)
+                .collect(Collectors.toList());
+
+        List<Product> products = findAllById(productIds);
+        int totalCost = getTotalCost(model, products);
+        if (totalCost > user.getDeposit()) {
+            throw new ValidationException("Deposit is not enough!!!");
+        }
+
+        for (Product product : products) {
+            Optional<BuyProductModel> productModel = model.getProducts().stream()
+                    .filter(p -> p.getProductId() == product.getId())
+                    .findFirst();
+            if (productModel.isEmpty()) {
+                continue;
+            }
+            product.setAmountAvailable(product.getAmountAvailable() - productModel.get().getAmount());
+            save(product);
+        }
+
+        int remaining = user.getDeposit() - totalCost;
+        ArrayList<Integer> changes = new ArrayList<>();
+        List<Enums.DepositType> depositTypes = Arrays.stream(Enums.DepositType.values())
+                .sorted((a, b) -> b.amount - a.amount)
+                .collect(Collectors.toList());
+        for (Enums.DepositType depositType : depositTypes) {
+            while (remaining >= depositType.amount) {
+                changes.add(depositType.amount);
+                remaining -= depositType.amount;
+            }
+        }
+
+        reset(user.getId());
+        return new BuyPostBackModel(products, totalCost, changes);
     }
 
     public int getTotalCost(BuyModel model, List<Product> products) throws ValidationException {
@@ -110,5 +155,9 @@ public class ProductService {
 
     public User getCurrentUser() throws ValidationException {
         return userService.getCurrentUser();
+    }
+
+    public void reset(int id) throws ValidationException {
+        userService.reset(id);
     }
 }

@@ -1,18 +1,18 @@
 package com.abbas.vendingmachine.contollers;
 
 import com.abbas.vendingmachine.entities.Product;
-import com.abbas.vendingmachine.entities.User;
+import com.abbas.vendingmachine.models.BuyModel;
+import com.abbas.vendingmachine.models.BuyPostBackModel;
 import com.abbas.vendingmachine.services.ProductService;
-import com.abbas.vendingmachine.services.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.xml.bind.ValidationException;
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @Slf4j
@@ -51,6 +51,13 @@ public class ProductController {
     public HttpStatus deleteProduct(@PathVariable("productId") int productId) throws ValidationException {
         productService.deleteProduct(productId);
         return HttpStatus.OK;
+    }
+
+    @PostMapping("/buy")
+    @PreAuthorize("hasAuthority('BUYER')")
+    public ResponseEntity<?> buy(@RequestBody BuyModel model) throws ValidationException {
+        BuyPostBackModel postBack = productService.buy(model);
+        return ResponseEntity.ok(postBack);
     }
 
 }

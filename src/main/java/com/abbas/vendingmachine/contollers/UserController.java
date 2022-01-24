@@ -2,10 +2,9 @@ package com.abbas.vendingmachine.contollers;
 
 import com.abbas.vendingmachine.configurations.JwtTokenUtil;
 import com.abbas.vendingmachine.entities.Enums;
-import com.abbas.vendingmachine.entities.Product;
 import com.abbas.vendingmachine.entities.User;
-import com.abbas.vendingmachine.models.*;
-import com.abbas.vendingmachine.services.ProductService;
+import com.abbas.vendingmachine.models.JwtResponse;
+import com.abbas.vendingmachine.models.LoginModel;
 import com.abbas.vendingmachine.services.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -16,11 +15,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.xml.bind.ValidationException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @RestController
 @Slf4j
@@ -29,13 +24,10 @@ public class UserController {
 
     private final UserService userService;
 
-    private final ProductService productService;
-
     private final JwtTokenUtil jwtTokenUtil;
 
-    public UserController(UserService userService, ProductService productService, JwtTokenUtil jwtTokenUtil) {
+    public UserController(UserService userService, JwtTokenUtil jwtTokenUtil) {
         this.userService = userService;
-        this.productService = productService;
         this.jwtTokenUtil = jwtTokenUtil;
     }
 
@@ -72,52 +64,6 @@ public class UserController {
         User user = userService.getCurrentUser();
         userService.reset(user.getId());
         return HttpStatus.OK;
-    }
-
-    @PostMapping("/buy")
-    @PreAuthorize("hasAuthority('BUYER')")
-    public ResponseEntity<?> buy(@RequestBody BuyModel model) throws ValidationException {
-        User user = userService.getCurrentUser();
-        List<Integer> productIds = model
-                .getProducts()
-                .stream()
-                .map(BuyProductModel::getProductId)
-                .collect(Collectors.toList());
-
-        List<Product> products = productService.findAllById(productIds);
-        int totalCost = productService.getTotalCost(model, products);
-        if (totalCost > user.getDeposit()) {
-            throw new ValidationException("Deposit is not enough!!!");
-        }
-
-
-        for (Product product : products) {
-            Optional<BuyProductModel> productModel = model.getProducts().stream()
-                    .filter(p -> p.getProductId() == product.getId())
-                    .findFirst();
-            if (productModel.isEmpty()) {
-                continue;
-            }
-            product.setAmountAvailable(product.getAmountAvailable() - productModel.get().getAmount());
-            productService.save(product);
-        }
-
-        int remaining = user.getDeposit() - totalCost;
-        ArrayList<Integer> changes = new ArrayList<>();
-        List<Enums.DepositType> depositTypes = Arrays.stream(Enums.DepositType.values())
-                .sorted((a, b) -> b.amount - a.amount)
-                .collect(Collectors.toList());
-        for (Enums.DepositType depositType : depositTypes) {
-            while (remaining >= depositType.amount) {
-                changes.add(depositType.amount);
-                remaining -= depositType.amount;
-            }
-        }
-
-        userService.reset(user.getId());
-
-        BuyPostBackModel postBack = new BuyPostBackModel(products, totalCost, changes);
-        return ResponseEntity.ok(postBack);
     }
 
 
