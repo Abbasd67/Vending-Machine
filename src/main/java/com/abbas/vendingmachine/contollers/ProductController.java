@@ -20,11 +20,9 @@ import java.util.Optional;
 public class ProductController {
 
     private final ProductService productService;
-    private final UserService userService;
 
-    public ProductController(ProductService productService, UserService userService) {
+    public ProductController(ProductService productService) {
         this.productService = productService;
-        this.userService = userService;
     }
 
     @GetMapping("/product")
@@ -33,7 +31,6 @@ public class ProductController {
     }
 
     @PostMapping("/product")
-//    @PutMapping("/product")
     @PreAuthorize("hasAuthority('SELLER')")
     public Product postProduct(@RequestBody Product product) throws ValidationException {
         return setProduct(product);
@@ -46,39 +43,13 @@ public class ProductController {
     }
 
     private Product setProduct(Product product) throws ValidationException {
-        User user = userService.getCurrentUser();
-        Optional<Product> productOptional = productService.findById(product.getId());
-        if (productOptional.isEmpty()) {
-            if (product.getId() > 0) {
-                throw new ValidationException("Product not found!!!");
-            }
-            product.setSeller(user);
-            return productService.save(product);
-        } else {
-            Product currentProduct = productOptional.get();
-            if (!currentProduct.getSeller().getUsername().equalsIgnoreCase(user.getUsername())) {
-                throw new ValidationException("this product is not yours");
-            }
-            currentProduct.setCost(product.getCost());
-            currentProduct.setAmountAvailable(product.getAmountAvailable());
-            currentProduct.setProductName(product.getProductName());
-            return productService.save(currentProduct);
-        }
+        return productService.setProduct(product);
     }
 
     @DeleteMapping("/product/{productId}")
     @PreAuthorize("hasAuthority('SELLER')")
     public HttpStatus deleteProduct(@PathVariable("productId") int productId) throws ValidationException {
-        User user = userService.getCurrentUser();
-        Optional<Product> productOptional = productService.findById(productId);
-        if (productOptional.isEmpty()) {
-            throw new ValidationException("Product not found!!!");
-        }
-        Product currentProduct = productOptional.get();
-        if (!currentProduct.getSeller().getUsername().equalsIgnoreCase(user.getUsername())) {
-            throw new ValidationException("this product is not yours");
-        }
-        productService.delete(currentProduct);
+        productService.deleteProduct(productId);
         return HttpStatus.OK;
     }
 
