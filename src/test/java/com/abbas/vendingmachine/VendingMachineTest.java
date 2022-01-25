@@ -1,8 +1,10 @@
 package com.abbas.vendingmachine;
 
 import com.abbas.vendingmachine.entities.Enums;
-import com.abbas.vendingmachine.entities.Product;
-import com.abbas.vendingmachine.models.*;
+import com.abbas.vendingmachine.models.BuyModel;
+import com.abbas.vendingmachine.models.BuyProductModel;
+import com.abbas.vendingmachine.models.LoginModel;
+import com.abbas.vendingmachine.models.UserModel;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
