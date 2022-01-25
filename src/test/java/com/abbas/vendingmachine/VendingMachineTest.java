@@ -7,8 +7,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.json.JacksonJsonParser;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -40,7 +42,7 @@ public class VendingMachineTest extends DemoApplicationTests {
     @Test
     public void testUser() throws Exception {
 
-        this.mockMvc.perform(MockMvcRequestBuilders
+        mockMvc.perform(MockMvcRequestBuilders
                         .post("/user")
                         .content(asJsonString(new UserModel("Abbas", "Dehghan", Enums.Role.BUYER)))
                         .contentType(MediaType.APPLICATION_JSON)
@@ -48,7 +50,7 @@ public class VendingMachineTest extends DemoApplicationTests {
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("OK")));
 
-        this.mockMvc.perform(MockMvcRequestBuilders
+        mockMvc.perform(MockMvcRequestBuilders
                         .post("/login")
                         .content(asJsonString(new LoginModel("Abbas", "Dehghan")))
                         .contentType(MediaType.APPLICATION_JSON)
@@ -62,10 +64,8 @@ public class VendingMachineTest extends DemoApplicationTests {
     @Test
     public void testDeposit() throws Exception {
 
-        //remember to get new token when testing
-        String token = "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJCdXllciIsImV4cCI6MTY0Mjg3OTEwOCwiaWF0IjoxNjQyODYxMTA4fQ.WsWDSkiUVfrAntTEtBPUhE0T1c6iMivxECu3ouszE2z6ggRgnJcmgD4ifqTx35AneKyy8jz1D9o7eR1rxw9vYA";
-
-        this.mockMvc.perform(MockMvcRequestBuilders
+        String token =getToken("Buyer","Buyer");
+        mockMvc.perform(MockMvcRequestBuilders
                         .get("/deposit?amount=20")
                         .header("Authorization", "Bearer " + token)
                 )
@@ -78,14 +78,12 @@ public class VendingMachineTest extends DemoApplicationTests {
     @Test
     public void testBuy() throws Exception {
 
-        //remember to get new token when testing
-        String token = "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJCdXllcjIiLCJleHAiOjE2NDI4ODA1ODYsImlhdCI6MTY0Mjg2MjU4Nn0.t2njc9z7G7sfrjPR8JK3pCRyosOayF8-v1xCQD9ZZ_FzvQRvMdLqgxxaDR5eOYbbk7ogo2SbSnfw1EkGIzxggA";
-
+        String token =getToken("Buyer2","Buyer2");
         BuyProductModel buy1 = new BuyProductModel(1, 2);
         BuyProductModel buy2 = new BuyProductModel(2, 3);
         BuyModel model = new BuyModel(List.of(buy1, buy2));
 
-        this.mockMvc.perform(MockMvcRequestBuilders
+        mockMvc.perform(MockMvcRequestBuilders
                         .post("/buy")
                         .header("Authorization", "Bearer " + token)
                         .content(asJsonString(model))
@@ -106,11 +104,29 @@ public class VendingMachineTest extends DemoApplicationTests {
 
     }
 
-    public static String asJsonString(final Object obj) {
+    public String asJsonString(final Object obj) {
         try {
             return new ObjectMapper().writeValueAsString(obj);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public String getToken(String userName, String password) throws Exception {
+
+        ResultActions result = mockMvc.perform(MockMvcRequestBuilders
+                        .post("/login")
+                        .content(asJsonString(new LoginModel(userName, password)))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                )
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(content().contentType("application/json"));
+
+        String resultString = result.andReturn().getResponse().getContentAsString();
+
+        JacksonJsonParser jsonParser = new JacksonJsonParser();
+        return jsonParser.parseMap(resultString).get("token").toString();
     }
 }
