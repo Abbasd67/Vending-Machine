@@ -29,7 +29,7 @@ public class UserService implements UserDetailsService {
 
     public UserDetails login(String username, String password) throws UsernameNotFoundException {
         Optional<User> user = findByUsername(username);
-        if (user.isEmpty() || !user.get().getPassword().equalsIgnoreCase(password)) {
+        if (user.isEmpty() || !user.get().getPassword().equals(password)) {
             throw new UsernameNotFoundException("User not found with this Username and Password!!!");
         }
         return loadUserByUsername(username);
