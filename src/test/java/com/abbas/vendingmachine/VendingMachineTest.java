@@ -46,7 +46,7 @@ public class VendingMachineTest extends DemoApplicationTests {
 
         mockMvc.perform(MockMvcRequestBuilders
                         .post("/user")
-                        .content(asJsonString(new UserModel("Abbas", "Dehghan", Enums.Role.BUYER)))
+                        .content(asJsonString(new UserModel("Abbas", "Dehghan", "BUYER")))
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -66,7 +66,7 @@ public class VendingMachineTest extends DemoApplicationTests {
     @Test
     public void testDeposit() throws Exception {
 
-        String token =getToken("Buyer","Buyer");
+        String token = getToken("Buyer", "Buyer");
         mockMvc.perform(MockMvcRequestBuilders
                         .get("/deposit?amount=20")
                         .header("Authorization", "Bearer " + token)
@@ -80,7 +80,7 @@ public class VendingMachineTest extends DemoApplicationTests {
     @Test
     public void testBuy() throws Exception {
 
-        String token =getToken("Buyer2","Buyer2");
+        String token = getToken("Buyer2", "Buyer2");
         BuyProductModel buy1 = new BuyProductModel(1, 2);
         BuyProductModel buy2 = new BuyProductModel(2, 3);
         BuyModel model = new BuyModel(List.of(buy1, buy2));
