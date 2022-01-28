@@ -5,6 +5,7 @@ import com.abbas.vendingmachine.entities.Enums;
 import com.abbas.vendingmachine.entities.User;
 import com.abbas.vendingmachine.models.JwtResponse;
 import com.abbas.vendingmachine.models.LoginModel;
+import com.abbas.vendingmachine.models.UserModel;
 import com.abbas.vendingmachine.services.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -32,9 +33,17 @@ public class UserController {
     }
 
     @PostMapping("/user")
-    public HttpStatus register(@RequestBody User user) throws ValidationException {
-        userService.addUser(user);
-        return HttpStatus.OK;
+    public HttpStatus register(@RequestBody UserModel model) throws ValidationException {
+        Enums.Role role;
+        try {
+            role = Enums.Role.valueOf(model.getRole());
+            User user = new User(model.getUsername(), model.getPassword(), role);
+            userService.addUser(user);
+            return HttpStatus.OK;
+        } catch (
+                IllegalArgumentException ex) {
+            throw new ValidationException("Role not found!!!");
+        }
     }
 
     @PostMapping("/login")
