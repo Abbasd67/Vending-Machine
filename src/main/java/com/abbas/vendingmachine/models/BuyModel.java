@@ -1,7 +1,12 @@
 package com.abbas.vendingmachine.models;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import java.util.List;
 
+@Getter
+@Setter
 public class BuyModel {
 
     private List<BuyProductModel> products;
@@ -10,14 +15,6 @@ public class BuyModel {
     }
 
     public BuyModel(List<BuyProductModel> products) {
-        this.products = products;
-    }
-
-    public List<BuyProductModel> getProducts() {
-        return products;
-    }
-
-    public void setProducts(List<BuyProductModel> products) {
         this.products = products;
     }
 

@@ -1,9 +1,14 @@
 package com.abbas.vendingmachine.entities;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 
+@Getter
+@Setter
 @Entity
 @Table(name = "benutzer")
 public class User {
@@ -20,15 +25,6 @@ public class User {
     @OneToMany(mappedBy = "seller", orphanRemoval = true, fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<Product> products = new ArrayList<>();
 
-    public List<Product> getProducts() {
-        return products;
-    }
-
-    public void setProducts(List<Product> products) {
-        this.products = products;
-    }
-
-
     public User() {
 
     }
@@ -44,43 +40,4 @@ public class User {
         this.deposit = deposit;
     }
 
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public int getDeposit() {
-        return deposit;
-    }
-
-    public void setDeposit(int deposit) {
-        this.deposit = deposit;
-    }
-
-    public Enums.Role getRole() {
-        return role;
-    }
-
-    public void setRole(Enums.Role role) {
-        this.role = role;
-    }
 }

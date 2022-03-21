@@ -1,5 +1,10 @@
 package com.abbas.vendingmachine.models;
 
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
 public class BuyProductModel {
     private int productId;
     private int amount;
@@ -12,19 +17,4 @@ public class BuyProductModel {
         this.amount = amount;
     }
 
-    public int getProductId() {
-        return productId;
-    }
-
-    public void setProductId(int productId) {
-        this.productId = productId;
-    }
-
-    public int getAmount() {
-        return amount;
-    }
-
-    public void setAmount(int amount) {
-        this.amount = amount;
-    }
 }
